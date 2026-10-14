@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="theme-color" content="#101a25">
+  <title>SHADOWLANDS: Rift Runner</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="game"></div>
+  <div id="hud" class="hidden">
+    <div class="topbar">
+      <div class="brand">SHADOWLANDS <small>RIFT RUNNER</small></div>
+      <div class="stats"><span>❤ <b id="health">100</b></span><span>✦ <b id="crystals">0</b></span><span>Players: <b id="players">1</b></span></div>
+      <button id="pauseBtn" class="smallbtn">Ⅱ</button>
+    </div>
+    <div class="quest"><b>MISSION</b><span id="questText">Collect 5 rift crystals</span><div class="progress"><i id="progress"></i></div></div>
+    <div id="notice" class="notice"></div>
+    <div id="interactHint"></div>
+    <div id="mobileControls">
+      <div id="stickArea"><div id="stick"></div></div>
+      <div class="actionButtons"><button id="attackBtn">⚔</button><button id="jumpBtn">↑</button><button id="interactBtn">◎</button></div>
+    </div>
+    <div class="desktopHelp">WASD move · Mouse look · Click / Space attack · Shift sprint · E interact · Esc pause</div>
+  </div>
+  <div id="menu" class="screen">
+    <div class="panel">
+      <div class="eyebrow">A CO-OP OPEN WORLD ADVENTURE</div>
+      <h1>SHADOW<span>LANDS</span></h1>
+      <p class="subtitle">RIFT RUNNER</p>
+      <p class="intro">A fractured world. Ancient crystals. A rift waking beneath the forest.</p>
+      <div class="featureRow"><span>✦ Explore a 3D wilderness</span><span>⚔ Fight shadow beasts</span><span>◉ See other adventurers online</span></div>
+      <label for="playerName">ADVENTURER NAME</label>
+      <input id="playerName" maxlength="16" value="RiftRunner" autocomplete="nickname">
+      <button id="playBtn" class="primary">ENTER THE SHADOWLANDS</button>
+      <p id="connectionStatus" class="status">Online mode needs your Firebase setup. Solo exploration is available immediately.</p>
+      <p class="fineprint">Free browser game · No install · Early-access build</p>
+    </div>
+  </div>
+  <div id="pauseMenu" class="screen hidden">
+    <div class="panel compact"><div class="eyebrow">TAKE A BREATH</div><h2>PAUSED</h2><button id="resumeBtn" class="primary">RESUME ADVENTURE</button><button id="leaveBtn" class="secondary">RETURN TO TITLE</button></div>
+  </div>
+  <div id="endMenu" class="screen hidden">
+    <div class="panel compact"><div class="eyebrow">RIFT QUEST COMPLETE</div><h2>YOU DID IT!</h2><p id="finalScore">You recovered the crystals.</p><button id="againBtn" class="primary">PLAY AGAIN</button></div>
+  </div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

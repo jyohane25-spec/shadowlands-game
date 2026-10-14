@@ -1,0 +1,78 @@
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js';
+import { firebaseConfig } from './firebase-config.js';
+
+const $=id=>document.getElementById(id);
+const game=$('game');
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x91c6d1);
+scene.fog=new THREE.Fog(0x91c6d1,38,145);
+const camera=new THREE.PerspectiveCamera(68,innerWidth/innerHeight,.1,300);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;game.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xc9f5ff,0x35422d,2.0));
+const sun=new THREE.DirectionalLight(0xffedc3,2.5);sun.position.set(-25,45,20);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-55;sun.shadow.camera.right=55;sun.shadow.camera.top=55;sun.shadow.camera.bottom=-55;scene.add(sun);
+const mat=(color,roughness=1,emissive=0)=>new THREE.MeshStandardMaterial({color,roughness,emissive,emissiveIntensity:emissive?1.3:0});
+const grass=mat(0x42694c),darkGrass=mat(0x2e4c3c),stone=mat(0x677c84),bark=mat(0x5b3e2b),leaf=mat(0x1c5549),leaf2=mat(0x32745d),crystalMat=mat(0x70fff0,.25,0x0b9fbc),gold=mat(0xf5c766,.35,0x68400b),enemyMat=mat(0x352943,.7,0x51225c);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(260,260),grass);floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
+// Hand-built stylized wilderness: hills, trails, trees, stones and a glowing ancient gate.
+const world=new THREE.Group();scene.add(world);
+function box(parent,x,y,z,sx,sy,sz,material){const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),material);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
+function tree(x,z,scale=1){const g=new THREE.Group();g.position.set(x,0,z);g.scale.setScalar(scale);world.add(g);const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22,.38,2.3,7),bark);trunk.position.y=1.15;trunk.castShadow=true;g.add(trunk);for(let i=0;i<3;i++){const crown=new THREE.Mesh(new THREE.ConeGeometry(1.35-i*.17,2.4,7),i===1?leaf2:leaf);crown.position.set(0,2.5+i*.72,0);crown.castShadow=true;g.add(crown)}}
+function rock(x,z,s=1){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(s,0),stone);r.position.set(x,s*.45,z);r.rotation.set(.2,.8,.3);r.castShadow=true;r.receiveShadow=true;world.add(r)}
+let seed=712;function rand(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}
+for(let i=0;i<180;i++){let x=(rand()-.5)*180,z=(rand()-.5)*180;if(Math.abs(x)<10&&Math.abs(z)<12)continue; if(Math.abs(x)<7) x+=Math.sign(x||1)*7;tree(x,z,.65+rand()*.75)}
+for(let i=0;i<75;i++){let x=(rand()-.5)*140,z=(rand()-.5)*140;if(Math.abs(x)<7&&Math.abs(z)<8)continue;rock(x,z,.3+rand()*.8)}
+// Ancient archway
+const gate=new THREE.Group();gate.position.set(0,0,-18);world.add(gate);
+box(gate,-3,3,0,.8,6,.9,stone);box(gate,3,3,0,.8,6,.9,stone);box(gate,0,6,0,7,.8,.9,gold);
+const portalMat=new THREE.MeshBasicMaterial({color:0x4ef5e3,transparent:true,opacity:.42,side:THREE.DoubleSide});
+const portal=new THREE.Mesh(new THREE.PlaneGeometry(5.2,4.8),portalMat);portal.position.set(0,3,0);gate.add(portal);
+const torus=new THREE.Mesh(new THREE.TorusGeometry(2.4,.09,8,48),crystalMat);torus.position.set(0,3,.1);gate.add(torus);
+// Paths
+const pathmat=mat(0x907e61);for(let i=0;i<7;i++){const p=new THREE.Mesh(new THREE.BoxGeometry(3.5,.05,6),pathmat);p.position.set(Math.sin(i*.45)*2,.025,10-i*5);p.rotation.y=Math.sin(i*.45)*-.12;world.add(p)}
+// Player, low-poly explorer
+function makeHero(color=0x38cdb9){const g=new THREE.Group();const body=new THREE.Mesh(new THREE.CapsuleGeometry(.48,.9,4,8),mat(color,.7));body.position.y=1.25;body.castShadow=true;g.add(body);const head=new THREE.Mesh(new THREE.SphereGeometry(.34,12,10),mat(0xf0c69a));head.position.y=2.05;head.castShadow=true;g.add(head);const hood=new THREE.Mesh(new THREE.SphereGeometry(.39,12,8,0,Math.PI*2,0,Math.PI/2),mat(0x23394a));hood.position.y=2.17;g.add(hood);const pack=box(g,-.48,1.3,-.02,.24,.55,.42,mat(0x8d633f));return g}
+const player=makeHero();scene.add(player);player.position.set(0,0,5);
+const sword=new THREE.Mesh(new THREE.BoxGeometry(.12,.85,.16),gold);sword.position.set(.57,1.2,-.12);sword.rotation.z=-.35;player.add(sword);
+const crystals=[];for(let i=0;i<9;i++){let a=i*2.399,r=9+(i%3)*5,x=Math.cos(a)*r,z=Math.sin(a)*r-10;const g=new THREE.Group();g.position.set(x,.9,z);const c=new THREE.Mesh(new THREE.OctahedronGeometry(.62),crystalMat);c.scale.y=1.45;c.castShadow=true;g.add(c);const ring=new THREE.Mesh(new THREE.TorusGeometry(.85,.035,6,24),gold);ring.rotation.x=Math.PI/2;g.add(ring);scene.add(g);crystals.push({group:g,got:false})}
+const enemies=[];for(let i=0;i<5;i++){const e=new THREE.Group();const orb=new THREE.Mesh(new THREE.IcosahedronGeometry(.7,1),enemyMat);orb.position.y=1;orb.castShadow=true;e.add(orb);for(const x of [-.24,.24]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.08,8,8),mat(0xff586e,.4,0xff1833));eye.position.set(x,1.12,-.59);e.add(eye)}e.position.set((i%2?1:-1)*(8+i*2),0,-7-i*9);scene.add(e);enemies.push({group:e,hp:2,alive:true,hit:0,home:e.position.clone()})}
+const otherPlayers=new Map();let db=null,user=null,online=false,onlineRef=null,lastSync=0;let playerName='RiftRunner';
+let started=false,paused=false,health=100,crystalCount=0,score=0,attackCooldown=0,attackAnim=0,noticeTimer=0;
+const keys={};let joy={x:0,y:0},stickActive=false;
+function showNotice(t){$('notice').textContent=t;$('notice').style.opacity='1';noticeTimer=2.2}
+function updateHUD(){$('health').textContent=health;$('crystals').textContent=crystalCount;$('players').textContent=online?String(otherPlayers.size+1):'1';$('progress').style.width=Math.min(100,crystalCount/5*100)+'%';$('questText').textContent=crystalCount<5?`Collect 5 rift crystals (${Math.min(crystalCount,5)}/5)`:'Return to the glowing gate'}
+function loadFirebase(){if(!firebaseConfig.apiKey||firebaseConfig.apiKey.startsWith('PASTE_'))return;import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js').then(async appmod=>{const authmod=await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');const dbmod=await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');const app=appmod.initializeApp(firebaseConfig);const cred=await authmod.signInAnonymously(authmod.getAuth(app));user=cred.user;db=dbmod;online=true;onlineRef=db.ref(db.getDatabase(app),'players/'+user.uid);await db.set(onlineRef,{name:playerName,x:player.position.x,z:player.position.z,rot:player.rotation.y,updated:Date.now()});db.onValue(db.ref(db.getDatabase(app),'players'),snap=>{const all=snap.val()||{};for(const [id,p] of Object.entries(all)){if(id===user.uid)continue;if(!otherPlayers.has(id)){const h=makeHero(0xf0b85b);scene.add(h);otherPlayers.set(id,{hero:h,data:p})}else otherPlayers.get(id).data=p}for(const [id,o] of otherPlayers){if(!all[id]){scene.remove(o.hero);otherPlayers.delete(id)}}updateHUD()});db.onDisconnect(onlineRef).remove();$('connectionStatus').textContent='Online connected! You can see other adventurers in this shared world.';showNotice('Online world connected');}).catch(err=>{$('connectionStatus').textContent='Online setup error: '+err.message+'. Solo mode still works.'})}
+function start(){if(started)return;playerName=$('playerName').value.trim().slice(0,16)||'RiftRunner';started=true;paused=false;$('menu').classList.add('hidden');$('hud').classList.remove('hidden');health=100;crystalCount=0;score=0;updateHUD();loadFirebase();if(innerWidth>700)renderer.domElement.requestPointerLock?.();showNotice('Find the glowing crystals. Watch for shadow beasts!')}
+function reset(){started=false;paused=false;health=100;crystalCount=0;score=0;player.position.set(0,0,5);for(const c of crystals){c.got=false;c.group.visible=true}for(const e of enemies){e.alive=true;e.hp=2;e.group.visible=true;e.group.position.copy(e.home)}$('endMenu').classList.add('hidden');$('hud').classList.add('hidden');$('menu').classList.remove('hidden');if(online&&onlineRef)db.remove(onlineRef);online=false}
+function pause(){if(!started)return;paused=!paused;$('pauseMenu').classList.toggle('hidden',!paused);if(paused)document.exitPointerLock?.();else if(innerWidth>700)renderer.domElement.requestPointerLock?.()}
+$('playBtn').onclick=start;$('pauseBtn').onclick=pause;$('resumeBtn').onclick=pause;$('leaveBtn').onclick=reset;$('againBtn').onclick=reset;
+window.addEventListener('keydown',e=>{keys[e.code]=true;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='Escape'&&started)pause();if(e.code==='KeyE')interact();if(e.code==='Space'&&started&&!paused)attack()});window.addEventListener('keyup',e=>keys[e.code]=false);
+let yaw=0,pitch=.2,mouseDown=false,lastX=0,lastY=0;
+renderer.domElement.addEventListener('click',()=>{if(started&&!paused&&innerWidth>700&&document.pointerLockElement!==renderer.domElement)renderer.domElement.requestPointerLock?.()});
+document.addEventListener('mousemove',e=>{if(document.pointerLockElement===renderer.domElement){yaw-=e.movementX*.0025;pitch=Math.max(-.15,Math.min(.65,pitch+e.movementY*.0018))}});
+renderer.domElement.addEventListener('pointerdown',e=>{if(innerWidth<=700){mouseDown=true;lastX=e.clientX;lastY=e.clientY}});window.addEventListener('pointerup',()=>mouseDown=false);window.addEventListener('pointermove',e=>{if(mouseDown&&innerWidth<=700){yaw-=(e.clientX-lastX)*.006;pitch=Math.max(-.15,Math.min(.65,pitch+(e.clientY-lastY)*.003));lastX=e.clientX;lastY=e.clientY}});
+const stickArea=$('stickArea'),stick=$('stick');stickArea.addEventListener('pointerdown',e=>{stickActive=true;stickArea.setPointerCapture(e.pointerId);moveStick(e)});stickArea.addEventListener('pointermove',e=>{if(stickActive)moveStick(e)});stickArea.addEventListener('pointerup',()=>{stickActive=false;joy.x=joy.y=0;stick.style.transform='translate(0,0)'});stickArea.addEventListener('pointercancel',()=>{stickActive=false;joy.x=joy.y=0;stick.style.transform='translate(0,0)'});
+function moveStick(e){const r=stickArea.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,len=Math.max(1,Math.hypot(dx,dy)),scale=Math.min(1,35/len);joy.x=dx/35*scale;joy.y=dy/35*scale;stick.style.transform=`translate(${joy.x*35}px,${joy.y*35}px)`}
+$('attackBtn').onclick=attack;$('jumpBtn').onclick=()=>{if(started&&!paused)player.position.y=.8};$('interactBtn').onclick=interact;
+function attack(){if(!started||paused||attackCooldown>0)return;attackCooldown=.48;attackAnim=.28;showNotice('Strike!');for(const e of enemies){if(!e.alive)continue;if(e.group.position.distanceTo(player.position)<3.6){e.hp--;e.hit=.25;score+=10;if(e.hp<=0){e.alive=false;e.group.visible=false;score+=50;showNotice('Shadow beast defeated +50')}else showNotice('Hit! One more strike')} }}
+function interact(){if(!started||paused)return;if(crystalCount>=5&&player.position.distanceTo(gate.position)<8){$('finalScore').textContent=`You recovered ${crystalCount} crystals and earned ${score} points. The rift is quiet—for now.`;$('endMenu').classList.remove('hidden');paused=true;document.exitPointerLock?.();return}let nearest=null,dist=5;for(const c of crystals){if(c.got)continue;const d=c.group.position.distanceTo(player.position);if(d<dist){dist=d;nearest=c}}if(nearest){nearest.got=true;nearest.group.visible=false;crystalCount++;score+=100;updateHUD();showNotice('Rift crystal recovered +100')}else if(crystalCount>=5)showNotice('Return to the glowing gate');else showNotice('Move closer to a glowing crystal')}
+const clock=new THREE.Clock();let lastDamage=0;
+function tick(){requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;
+ for(const c of crystals){if(c.got)continue;c.group.rotation.y+=dt*.8;c.group.position.y=.9+Math.sin(t*2+c.group.position.x)*.15}
+ portal.material.opacity=.28+Math.sin(t*2)*.12;torus.rotation.z=t*.4;
+ if(started&&!paused){attackCooldown=Math.max(0,attackCooldown-dt);attackAnim=Math.max(0,attackAnim-dt);sword.rotation.z=-.35-(attackAnim>0?Math.sin((attackAnim/.28)*Math.PI)*1.6:0);
+ let forward=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)-joy.y;let side=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+joy.x;let len=Math.hypot(forward,side);if(len>1){forward/=len;side/=len}
+ const speed=(keys.ShiftLeft||keys.ShiftRight?8:5)*dt;player.position.x+=(-Math.sin(yaw)*forward+Math.cos(yaw)*side)*speed;player.position.z+=(-Math.cos(yaw)*forward-Math.sin(yaw)*side)*speed;player.position.x=THREE.MathUtils.clamp(player.position.x,-85,85);player.position.z=THREE.MathUtils.clamp(player.position.z,-85,85);player.position.y=Math.max(0,player.position.y-dt*3);player.rotation.y=yaw;
+ for(const e of enemies){if(!e.alive)continue;const d=e.group.position.distanceTo(player.position);if(d<14){const dir=player.position.clone().sub(e.group.position);dir.y=0;dir.normalize();e.group.position.addScaledVector(dir,dt*(d>2.2?1.65:0));e.group.lookAt(player.position.x,0,player.position.z);e.group.position.y=.15+Math.sin(t*4+e.home.x)*.15;if(d<1.7&&t-lastDamage>1.1){health=Math.max(0,health-9);lastDamage=t;updateHUD();showNotice('A shadow beast hit you!')}if(e.hit>0){e.hit-=dt;e.group.scale.setScalar(1.15)}else e.group.scale.setScalar(1);if(d<3.5&&attackCooldown<=.05&&keys.KeyF)attack()}
+ }
+ if(health<=0){health=100;player.position.set(0,0,5);showNotice('You were rescued at the forest camp. Keep going!');updateHUD()}
+ if(crystalCount>=5){$('questText').textContent='Return to the glowing gate';$('progress').style.width='100%'}
+ if(online&&db&&onlineRef&&t-lastSync>.12){lastSync=t;db.update(onlineRef,{name:playerName,x:player.position.x,z:player.position.z,rot:player.rotation.y,updated:Date.now()}).catch(()=>{})}
+ for(const o of otherPlayers.values()){const p=o.data;if(p&&typeof p.x==='number'){o.hero.position.x=THREE.MathUtils.lerp(o.hero.position.x,p.x,.18);o.hero.position.z=THREE.MathUtils.lerp(o.hero.position.z,p.z,.18);o.hero.rotation.y=p.rot||0}}
+ if(noticeTimer>0){noticeTimer-=dt;if(noticeTimer<=0)$('notice').style.opacity='0'}
+ }
+ const target=new THREE.Vector3(player.position.x,player.position.y+1.3,player.position.z);const dist=innerWidth<700?8:7.2;const desired=new THREE.Vector3(target.x+Math.sin(yaw)*dist,target.y+3.1+pitch*4,target.z+Math.cos(yaw)*dist);camera.position.lerp(desired,.12);camera.lookAt(target);
+ $('interactHint').textContent=crystalCount>=5?(player.position.distanceTo(gate.position)<8?'Press E / ◎ to seal the rift':'Return to the glowing gate'): 'Find a glowing crystal · Press E / ◎ to collect';
+ renderer.render(scene,camera)}
+tick();
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setSize(innerWidth,innerHeight)});
