@@ -7,6 +7,7 @@
 export const firebaseConfig = {
   apiKey: "AIzaSyDZw7YMBvd-vH8UNHJGI0FWnOvX9YxbQ9I",
   authDomain: "shadowlands-online.firebaseapp.com",
+  databaseURL: "https://your-actual-database.firebasedatabase.app",
   projectId: "shadowlands-online",
   storageBucket: "shadowlands-online.firebasestorage.app",
   messagingSenderId: "855161354921",
