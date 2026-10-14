@@ -5,9 +5,11 @@
 // 4. Create Realtime Database and set rules using README.md.
 // Leave placeholders unchanged to play offline.
 export const firebaseConfig = {
-  apiKey: "PASTE_YOUR_API_KEY",
-  authDomain: "PASTE_YOUR_PROJECT.firebaseapp.com",
-  databaseURL: "https://PASTE_YOUR_DATABASE.REGION.firebasedatabase.app",
-  projectId: "PASTE_YOUR_PROJECT_ID",
-  appId: "PASTE_YOUR_APP_ID"
+  apiKey: "AIzaSyDZw7YMBvd-vH8UNHJGI0FWnOvX9YxbQ9I",
+  authDomain: "shadowlands-online.firebaseapp.com",
+  projectId: "shadowlands-online",
+  storageBucket: "shadowlands-online.firebasestorage.app",
+  messagingSenderId: "855161354921",
+  appId: "1:855161354921:web:2bad237de554d0028947b8",
+  measurementId: "G-PK6JJ1NNZ5"
 };
