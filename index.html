@@ -2,48 +2,59 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <meta name="theme-color" content="#101a25">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#07111b">
+  <meta name="description" content="Explore a mysterious 3D forest, recover rift crystals and face shadow beasts in SHADOWLANDS: Rift Runner, a free browser adventure.">
+  <meta property="og:title" content="SHADOWLANDS: Rift Runner">
+  <meta property="og:description" content="A fractured world. Ancient crystals. A rift waking beneath the forest.">
+  <meta property="og:type" content="website">
   <title>SHADOWLANDS: Rift Runner</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="game"></div>
-  <div id="hud" class="hidden">
+  <main id="game" aria-label="3D game world"></main>
+  <div id="hud" class="hidden" aria-live="polite">
     <div class="topbar">
-      <div class="brand">SHADOWLANDS <small>RIFT RUNNER</small></div>
-      <div class="stats"><span>❤ <b id="health">100</b></span><span>✦ <b id="crystals">0</b></span><span>Players: <b id="players">1</b></span></div>
-      <button id="pauseBtn" class="smallbtn">Ⅱ</button>
+      <div class="brand"><span class="brand-mark">✦</span><span>SHADOWLANDS<small>RIFT RUNNER</small></span></div>
+      <div class="stats" aria-label="Game statistics">
+        <span class="stat health-stat">♥ <b id="health">100</b><small>HEALTH</small></span>
+        <span class="stat crystal-stat">✦ <b id="crystals">0</b><small>CRYSTALS</small></span>
+        <span class="stat player-stat">◉ <b id="players">1</b><small>PLAYERS</small></span>
+      </div>
+      <button id="pauseBtn" class="smallbtn" aria-label="Pause game" title="Pause">Ⅱ</button>
     </div>
-    <div class="quest"><b>MISSION</b><span id="questText">Collect 5 rift crystals</span><div class="progress"><i id="progress"></i></div></div>
-    <div id="notice" class="notice"></div>
-    <div id="interactHint"></div>
-    <div id="mobileControls">
-      <div id="stickArea"><div id="stick"></div></div>
-      <div class="actionButtons"><button id="attackBtn">⚔</button><button id="jumpBtn">↑</button><button id="interactBtn">◎</button></div>
+    <section class="quest" aria-label="Current mission"><div class="quest-head"><span>ACTIVE MISSION</span><span class="quest-dot"></span></div><span id="questText">Collect 5 rift crystals</span><div class="progress"><i id="progress"></i></div></section>
+    <div id="notice" class="notice" role="status" aria-live="polite"></div>
+    <div id="interactHint" class="interact-hint"></div>
+    <div id="mobileControls" aria-label="Touch controls">
+      <div id="stickArea" aria-label="Movement joystick"><div id="stick"></div></div>
+      <div class="actionButtons"><button id="attackBtn" aria-label="Attack" title="Attack">⚔</button><button id="jumpBtn" aria-label="Jump" title="Jump">↑</button><button id="interactBtn" aria-label="Interact" title="Interact">◎</button></div>
     </div>
-    <div class="desktopHelp">WASD move · Mouse look · Click / Space attack · Shift sprint · E interact · Esc pause</div>
+    <div class="desktopHelp">WASD MOVE <span>•</span> MOUSE LOOK <span>•</span> SPACE ATTACK <span>•</span> SHIFT SPRINT <span>•</span> E INTERACT <span>•</span> ESC PAUSE</div>
   </div>
-  <div id="menu" class="screen">
+  <section id="menu" class="screen">
+    <div class="menu-glow glow-one"></div><div class="menu-glow glow-two"></div>
     <div class="panel">
-      <div class="eyebrow">A CO-OP OPEN WORLD ADVENTURE</div>
+      <div class="eyebrow"><span class="live-dot"></span> AN EARLY-ACCESS ADVENTURE</div>
       <h1>SHADOW<span>LANDS</span></h1>
-      <p class="subtitle">RIFT RUNNER</p>
+      <p class="subtitle">R I F T&nbsp; R U N N E R</p>
+      <div class="divider-glow"></div>
       <p class="intro">A fractured world. Ancient crystals. A rift waking beneath the forest.</p>
-      <div class="featureRow"><span>✦ Explore a 3D wilderness</span><span>⚔ Fight shadow beasts</span><span>◉ See other adventurers online</span></div>
-      <label for="playerName">ADVENTURER NAME</label>
-      <input id="playerName" maxlength="16" value="RiftRunner" autocomplete="nickname">
-      <button id="playBtn" class="primary">ENTER THE SHADOWLANDS</button>
-      <p id="connectionStatus" class="status">Online mode needs your Firebase setup. Solo exploration is available immediately.</p>
-      <p class="fineprint">Free browser game · No install · Early-access build</p>
+      <div class="featureRow"><span>✦ <b>EXPLORE</b><small>Wilderness in 3D</small></span><span>⚔ <b>FIGHT</b><small>Shadow beasts</small></span><span>◉ <b>CONNECT</b><small>Online player presence</small></span></div>
+      <label for="playerName">YOUR ADVENTURER NAME</label>
+      <input id="playerName" maxlength="16" value="RiftRunner" autocomplete="nickname" spellcheck="false" aria-describedby="nameHelp">
+      <p id="nameHelp" class="input-help">Choose a name up to 16 characters.</p>
+      <button id="playBtn" class="primary"><span>ENTER THE SHADOWLANDS</span><span aria-hidden="true">↗</span></button>
+      <p id="connectionStatus" class="status"><span class="status-dot"></span> Checking online connection… Solo exploration is available.</p>
+      <div class="menu-footer"><span>FREE BROWSER GAME</span><span>NO INSTALL REQUIRED</span><span>BUILD 0.2 · PREVIEW</span></div>
     </div>
-  </div>
-  <div id="pauseMenu" class="screen hidden">
-    <div class="panel compact"><div class="eyebrow">TAKE A BREATH</div><h2>PAUSED</h2><button id="resumeBtn" class="primary">RESUME ADVENTURE</button><button id="leaveBtn" class="secondary">RETURN TO TITLE</button></div>
-  </div>
-  <div id="endMenu" class="screen hidden">
-    <div class="panel compact"><div class="eyebrow">RIFT QUEST COMPLETE</div><h2>YOU DID IT!</h2><p id="finalScore">You recovered the crystals.</p><button id="againBtn" class="primary">PLAY AGAIN</button></div>
-  </div>
+  </section>
+  <section id="pauseMenu" class="screen hidden" aria-label="Pause menu">
+    <div class="panel compact"><div class="eyebrow">YOUR JOURNEY CAN WAIT</div><h2>PAUSED</h2><p class="modal-copy">Take a moment. The forest will be here.</p><button id="resumeBtn" class="primary">RESUME ADVENTURE</button><button id="leaveBtn" class="secondary">RETURN TO TITLE</button></div>
+  </section>
+  <section id="endMenu" class="screen hidden" aria-label="Quest complete">
+    <div class="panel compact"><div class="eyebrow">RIFT QUEST COMPLETE</div><h2>YOU DID IT!</h2><p id="finalScore" class="modal-copy">You recovered the crystals.</p><button id="againBtn" class="primary">PLAY AGAIN</button></div>
+  </section>
   <script type="module" src="app.js"></script>
 </body>
 </html>
